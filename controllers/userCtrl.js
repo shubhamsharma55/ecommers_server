@@ -27,10 +27,7 @@ const userCtrl = {
             const accesstoken = createAccessToken({ id: newUser._id })
             const refershtoken = createRefershToken({ id: newUser._id })
 
-            res.cookie('refershtoken',refershtoken,{
-                httpOnly:true,
-                path:'/user/refresh_token'
-            })
+            res.cookie('refershtoken',refershtoken)
 
             res.json({ accesstoken })
 
@@ -55,6 +52,39 @@ const userCtrl = {
             return res.status(500).json({msg:err.message})
         }
         
+    },
+    login:async(req,res) =>{
+        try {
+            const {email,password} = req.body;
+            const user = await Users.findOne({email});
+
+            if(!user) return res.status(400).json({msg:"User does not exist"})
+            
+            const isMatch = await bcrypt.compare(password,user.password)
+
+            if(!isMatch) return res.status(400).json({msg:"Incorect password"})
+            
+            const accesstoken = createAccessToken({id:user._id})
+            const refershtoken =createRefershToken({id:user._id})
+
+            res.cookie('refreshtoken',refershtoken,{
+                httpOnly:true,
+                path:'user/refresh_token'
+            })
+            
+            res.json({accesstoken})
+
+        } catch (err) {
+            return res.status(500).json({msg:err.message})
+        }
+    },
+    logout:async(req,res) =>{
+        try {
+            res.clearCookie('refreshtoken',{path:'user/referesh_token'})
+            return res.json({msg:"Log Out"})
+        } catch (err) {
+            return res.status(500).json
+        }
     }
 }
 const createAccessToken = (payload) => {
