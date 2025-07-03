@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken')
 
 const userCtrl = {
     register: async (req, res) => {
-        // res.json({msg:"Test Controllers"})
         try {
             const { name, email, password } = req.body;
 
@@ -80,10 +79,19 @@ const userCtrl = {
     },
     logout:async(req,res) =>{
         try {
-            res.clearCookie('refreshtoken',{path:'user/referesh_token'})
+            res.clearCookie('refershtoken',{path:'/user/referesh_token'})
             return res.json({msg:"Log Out"})
         } catch (err) {
-            return res.status(500).json
+            return res.status(500).json({msg:err.message})
+        }
+    },
+    getUser:async(req,res) => {
+        try {
+            const user = await Users.findById(req.user.id).select('-password')
+            if(!user) return res.status(400).json({msg:"User Not foud"})
+            res.json(user)
+        } catch (err) {
+            return res.status(500).json({msg:err.message})
         }
     }
 }
